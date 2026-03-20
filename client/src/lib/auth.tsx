@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { User } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, setAuthToken } from "@/lib/queryClient";
 
 type AuthUser = Omit<User, "password">;
 
@@ -43,11 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (username: string, password: string) => {
     const res = await apiRequest("POST", "/api/auth/login", { username, password });
     const data = await res.json();
+    // Store token in memory for Bearer auth (cookies don't work through deploy proxy)
+    if (data.token) {
+      setAuthToken(data.token);
+    }
     setUser(data.user);
   }, []);
 
   const logout = useCallback(async () => {
     await apiRequest("POST", "/api/auth/logout");
+    setAuthToken(null);
     setUser(null);
   }, []);
 

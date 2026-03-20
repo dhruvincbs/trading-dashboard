@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { queryClient, apiRequest, API_BASE, getAuthToken } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Trash2 } from "lucide-react";
 import type { Trade } from "@shared/schema";
-
-const API_BASE = "__PORT_5000__".startsWith("__") ? "" : "__PORT_5000__";
 
 export default function AdminUploadTrades() {
   const { toast } = useToast();
@@ -25,8 +23,14 @@ export default function AdminUploadTrades() {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append("file", file);
+      const headers: Record<string, string> = {};
+      const token = getAuthToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const res = await fetch(`${API_BASE}/api/trades/upload`, {
         method: "POST",
+        headers,
         body: formData,
       });
       if (!res.ok) {
