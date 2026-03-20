@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { User } from "@shared/schema";
-import { apiRequest, setAuthToken } from "@/lib/queryClient";
+import { apiRequest, setAuthToken, queryClient } from "@/lib/queryClient";
 
 type AuthUser = Omit<User, "password">;
 
@@ -47,6 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (data.token) {
       setAuthToken(data.token);
     }
+    // Clear all cached queries so they refetch with the new auth token
+    queryClient.clear();
     setUser(data.user);
   }, []);
 
